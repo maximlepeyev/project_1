@@ -102,7 +102,7 @@ app.post('/videos', (req: RequestBodyType<{title: string, author: string, availa
 
 })
 
-app.get('/videos', (req, res) => {   //send all video 
+app.get('/videos', (req: Request, res: Response) => {   //send all video 
     res.status(200).send(videoDescription)
 })
 app.get('/videos/:id', (req:RequestParams<{id:number}>, res: Response) => {   // video by ID
@@ -114,7 +114,7 @@ app.get('/videos/:id', (req:RequestParams<{id:number}>, res: Response) => {   //
     }
     res.status(200).send(videoById)
 })
-app.delete('/testing/all-data', (req, res) => {
+app.delete('/testing/all-data', (req: Request, res: Response) => {
     videoDescription.length = 0
     res.sendStatus(204)
 })
@@ -134,7 +134,7 @@ app.put('/videos/:id', (req: RequestBodyAndParams<{id: number}, {title: string,
     availableResolutions: AvailableResolutions[],
     canBeDownloaded:boolean,
     publicationDate: string,
-    minAgeRestriction: number | null}>, res) => {
+    minAgeRestriction: number | null}>, res: Response) => {
     
     let errors: ErrorType = {
         errorsMessages: []
