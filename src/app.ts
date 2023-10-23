@@ -57,7 +57,7 @@ const videoDescription: VideoType[] = [
 ]
 
 
-app.post('/videos', (req: RequestBodyType<{title: string, author: string, availableResolutions: AvailableResolutions[]}>, res) => {
+app.post('/videos/', (req: RequestBodyType<{title: string, author: string, availableResolutions: AvailableResolutions[]}>, res) => {
     
     let errors: ErrorType = {
         errorsMessages: []
@@ -102,22 +102,25 @@ app.post('/videos', (req: RequestBodyType<{title: string, author: string, availa
 
 })
 
-app.get('/videos', (req: Request, res: Response) => {   //send all video 
+app.get('/videos/', (req: Request, res: Response) => {   //send all video 
     res.status(200).send(videoDescription)
 })
+
 app.get('/videos/:id', (req:RequestParams<{id:number}>, res: Response) => {   // video by ID
 
-    let videoById = videoDescription.find( (video: VideoType) => video.id === req.params.id )
+    let videoById = videoDescription.find( (video: VideoType) => video.id === +req.params.id )
 
     if (!videoById) {
         res.sendStatus(404)
     }
     res.status(200).send(videoById)
 })
+
 app.delete('/testing/all-data', (req: Request, res: Response) => {
     videoDescription.length = 0
     res.sendStatus(204)
 })
+
 app.delete('/videos/:id', (req:RequestParams<{id:number}>, res: Response) => {
     
     for ( let i = 0; i < videoDescription.length; i++ ) {
@@ -129,6 +132,7 @@ app.delete('/videos/:id', (req:RequestParams<{id:number}>, res: Response) => {
         res.sendStatus(404)
     }
 })
+
 app.put('/videos/:id', (req: RequestBodyAndParams<{id: number}, {title: string,
     author: string,
     availableResolutions: AvailableResolutions[],
