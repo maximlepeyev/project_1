@@ -173,6 +173,10 @@ app.put('/videos/:id', (req: RequestBodyAndParams<{id: number}, {title: string,
         errors.errorsMessages.push({message:'invalid minAgeRestriction', field: 'minAgeRestriction'})
      }}
 
+     if(typeof publicationDate !== 'string') {
+        errors.errorsMessages.push({message:'invalid publicationDate', field: 'publicationDate'})
+     }
+
     if(errors.errorsMessages.length){
         res.status(400).send(errors)
         return
@@ -184,6 +188,7 @@ app.put('/videos/:id', (req: RequestBodyAndParams<{id: number}, {title: string,
     videoByID.availableResolutions =  availableResolutions
     videoByID.canBeDownloaded = canBeDownloaded ? canBeDownloaded : false
     videoByID.minAgeRestriction = minAgeRestriction ? minAgeRestriction : null
+    videoByID.publicationDate = publicationDate ? publicationDate : videoByID.publicationDate
   }
     
     res.sendStatus(204);
