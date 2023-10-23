@@ -129,8 +129,9 @@ app.delete('/videos/:id', (req:RequestParams<{id:number}>, res: Response) => {
             res.sendStatus(204)
             return
         } 
-        res.sendStatus(404)
+       
     }
+    res.sendStatus(404)
 })
 
 app.put('/videos/:id', (req: RequestBodyAndParams<{id: number}, {title: string,
@@ -145,9 +146,9 @@ app.put('/videos/:id', (req: RequestBodyAndParams<{id: number}, {title: string,
     }
 
     let {title, author, availableResolutions, canBeDownloaded, publicationDate, minAgeRestriction} = req.body
-    let {id} = req.params
+   
 
-    let videoByID : VideoType | undefined  = videoDescription.find( (video) => video.id === id )
+    let videoByID : VideoType | undefined  = videoDescription.find( (video) => video.id === +req.params.id )
 
     if (!videoByID) {
         res.sendStatus(404)
