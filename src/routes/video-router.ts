@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express"
+import { videoRepository } from '../repositories/video-repositories';
 
 export const videoRoute = Router({})
 
@@ -36,29 +37,14 @@ type ErrorType = {
     errorsMessages: ErrorsMessages[]
 }
 
-const videoDescription: VideoType[] = [
-    {
-        "id": 0,
-        "title": "string",
-        "author": "string",
-        "canBeDownloaded": true,
-        "minAgeRestriction": null,
-        "createdAt": "2023-10-16T15:02:10.185Z",
-        "publicationDate": "2023-10-16T15:02:10.185Z",
-        "availableResolutions": 
-            [AvailableResolutions.P144]
-  
-    }
-]
+
 
 videoRoute.get('/', (req: Request, res: Response) => {   //send all video 
-    res.status(200).send(videoDescription)
+    res.status(200).send(videoRepository.getVideo())
 })
 
 videoRoute.get('/:id', (req:RequestParams<{id:number}>, res: Response) => {   // video by ID
-
-    let videoById = videoDescription.find( (video: VideoType) => video.id === +req.params.id )
-
+    let videoById = videoRepository.getVideoById(+req.params.id)
     if (!videoById) {
         res.sendStatus(404)
     }
@@ -66,21 +52,14 @@ videoRoute.get('/:id', (req:RequestParams<{id:number}>, res: Response) => {   //
 })
 
 videoRoute.delete('/testing/all-data', (req: Request, res: Response) => {
-    videoDescription.length = 0
+    let deleteData = videoRepository.getVideo()
+    deleteData.length = 0    
     res.sendStatus(204)
 })
 
 videoRoute.delete('/:id', (req:RequestParams<{id:number}>, res: Response) => {
     
-    for ( let i = 0; i < videoDescription.length; i++ ) {
-        if (videoDescription[i].id === +req.params.id) {
-            videoDescription.splice(i, 1)
-            res.sendStatus(204)
-            return
-        } 
-       
-    }
-    res.sendStatus(404)
+    videoRepository.deleteById(req.params.id) ? res.sendStatus(204) : res.sendStatus(404) 
 })
 
 videoRoute.put('/:id', (req: RequestBodyAndParams<{id: number}, {title: string,
@@ -96,9 +75,7 @@ videoRoute.put('/:id', (req: RequestBodyAndParams<{id: number}, {title: string,
 
     let {title, author, availableResolutions, canBeDownloaded, publicationDate, minAgeRestriction} = req.body
    
-
-    let videoByID : VideoType | undefined  = videoDescription.find( (video) => video.id === +req.params.id )
-
+    let videoByID = videoRepository.putVideo(+req.params.id, title, author, availableResolutions, canBeDownloaded, publicationDate, minAgeRestriction)
     if (!videoByID) {
         res.sendStatus(404)
     }
@@ -130,15 +107,6 @@ videoRoute.put('/:id', (req: RequestBodyAndParams<{id: number}, {title: string,
         res.status(400).send(errors)
         return
     }
-
-  if (videoByID) {
-    videoByID.author = author
-    videoByID.title = title
-    videoByID.availableResolutions =  availableResolutions
-    videoByID.canBeDownloaded = canBeDownloaded ? canBeDownloaded : false
-    videoByID.minAgeRestriction = minAgeRestriction ? minAgeRestriction : null
-    videoByID.publicationDate = publicationDate ? publicationDate : videoByID.publicationDate
-  }
     
     res.sendStatus(204);
 })
@@ -167,23 +135,7 @@ videoRoute.post('/', (req: RequestBodyType<{title: string, author: string, avail
         return
     }
 
-    const createDate = new Date()
-    const publicatinDate = new Date()
-    publicatinDate.setDate(createDate.getDate() + 1)
-
-    const newVideo: VideoType = {
-        id: +(new Date()),
-        canBeDownloaded: false,
-        minAgeRestriction: null,
-        createdAt: createDate.toISOString(),
-        publicationDate: publicatinDate.toISOString(),
-        title,
-        author,
-        availableResolutions
-    }
-
-    videoDescription.push(newVideo)
-
+    let newVideo = videoRepository.postVideo(title, author, availableResolutions)
     res.status(201).send(newVideo)
 
 })
