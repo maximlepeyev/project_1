@@ -1,12 +1,6 @@
+import {BlogsType} from '../type/blog-type'
 
-type BlogsType = {
-        id: string,
-        name: string,
-        description: string,
-        websiteUrl: string
-}
-
-const blogs: BlogsType[] = [
+export const blogs: BlogsType[] = [
     {
             id: "string",
             name: "string",
@@ -27,8 +21,9 @@ export const blogsRepository = {
     },
 
     postBlog(name: string, description: string, websiteUrl: string) {
+        let id = new Date()
         let newBlog = {
-            id: 'string',
+            id: id.toISOString(),
             name: name,
             description: description,
             websiteUrl: websiteUrl
@@ -57,7 +52,5 @@ export const blogsRepository = {
                 }
 }
     return false}
-    
-
 }
     

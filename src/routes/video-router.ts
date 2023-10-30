@@ -2,12 +2,10 @@ import { Router, Request, Response } from "express"
 import { videoRepository } from '../repositories/video-repositories';
 import {body, validationResult} from "express-validator"
 import {inputValidationMiddleware} from '../middleware/input-validation-middleware';
+import { RequestBodyType, RequestParamType, RequestBodyAndParamType } from "../type/request-type"
 
 export const videoRoute = Router({})
 
-type RequestParams<P> = Request<P, {}, {}, {}>
-type RequestBodyType<B> = Request<{}, {}, B, {}>
-type RequestBodyAndParams<P, B> = Request<P, {}, B, {}>
 
 export enum AvailableResolutions {
     P144 = 'P144', 
@@ -51,7 +49,7 @@ videoRoute.get('/', (req: Request, res: Response) => {   //send all video
     res.status(200).send(videoRepository.getVideo())
 })
 
-videoRoute.get('/:id', (req:RequestParams<{id:number}>, res: Response) => {   // video by ID
+videoRoute.get('/:id', (req:RequestParamType<{id:number}>, res: Response) => {   // video by ID
     let videoById = videoRepository.getVideoById(+req.params.id)
     if (!videoById) {
         res.sendStatus(404)
@@ -65,7 +63,7 @@ videoRoute.delete('/testing/all-data', (req: Request, res: Response) => {
     res.sendStatus(204)
 })
 
-videoRoute.delete('/:id', (req:RequestParams<{id:number}>, res: Response) => {
+videoRoute.delete('/:id', (req:RequestParamType<{id:number}>, res: Response) => {
     
     videoRepository.deleteById(req.params.id) ? res.sendStatus(204) : res.sendStatus(404) 
 })
@@ -77,7 +75,7 @@ videoRoute.put('/:id',
                     canBeDownloadedValidation,
                     minAgeRestrictionValidation,
                     inputValidationMiddleware,
-    (req: RequestBodyAndParams<{id: string}, {title: string, author: string, availableResolutions: AvailableResolutions[], canBeDownloaded:boolean, publicationDate: string, minAgeRestriction: number | null}>, res: Response) => {
+    (req: RequestBodyAndParamType<{id: string}, {title: string, author: string, availableResolutions: AvailableResolutions[], canBeDownloaded:boolean, publicationDate: string, minAgeRestriction: number | null}>, res: Response) => {
     
     let {title, author, availableResolutions, canBeDownloaded, publicationDate, minAgeRestriction} = req.body
    
