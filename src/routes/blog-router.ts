@@ -19,12 +19,12 @@ blogRoute.post('/',
 })
 
 blogRoute.get('/', (req: Request, res:Response) => {
-                res.status(201).send(blogsRepository.getBlogs())
+                res.status(200).send(blogsRepository.getBlogs())
 })
 
 blogRoute.get('/:id', (req:RequestParamType<{id: string}>, res:Response) => {
     let blogById = blogsRepository.getBlogById(req.params.id)
-    res.status(201).send(blogById)
+    blogById ? res.status(201).send(blogById) : res.sendStatus(404)
 })
 
 blogRoute.delete('/:id',
@@ -42,5 +42,5 @@ blogRoute.put('/',
                 (req: RequestBodyAndParamType<{id:string}, {name: string, description: string, websiteUrl: string}>, res: Response) => {
     let { name, description, websiteUrl } = req.body
     let updatedBlog = blogsRepository.putBlog(req.params.id, name, description, websiteUrl)
-    updatedBlog ? res.sendStatus(200) : res.sendStatus(404) 
+    updatedBlog ? res.sendStatus(204) : res.sendStatus(404) 
 })
