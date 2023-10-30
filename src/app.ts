@@ -17,6 +17,7 @@ app.get('/', (req, res) => {
 })
 app.delete('/testing/all-data', (req, res) => {
     deleteAllData()
+    res.sendStatus(201)
 })
 
 

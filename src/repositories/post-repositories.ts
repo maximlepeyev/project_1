@@ -2,7 +2,7 @@ import { PostsType } from "../type/post-type"
 
 
 
-const posts: PostsType[] = [
+export const posts: PostsType[] = [
     {
         id: "string",
         title: "string",
