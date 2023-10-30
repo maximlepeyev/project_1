@@ -1,3 +1,5 @@
+import { body } from "express-validator"
+
 export enum AvailableResolutions {
     P144 = 'P144', 
     P240 = 'P240',

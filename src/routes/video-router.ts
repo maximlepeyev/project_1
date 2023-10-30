@@ -1,5 +1,7 @@
 import { Router, Request, Response } from "express"
 import { videoRepository } from '../repositories/video-repositories';
+import {body, validationResult} from "express-validator"
+import {inputValidationMiddleware} from '../middleware/input-validation-middleware';
 
 export const videoRoute = Router({})
 
@@ -37,7 +39,13 @@ type ErrorType = {
     errorsMessages: ErrorsMessages[]
 }
 
-
+const titleValidation = body('title').trim().isLength( { min: 1, max: 40 } )
+const authorValidation = body('title').trim().isLength( { min: 1, max: 20 } )
+const availableResolutionsValidation = body('availableResolutions').isArray().isLength({min:1})
+const canBeDownloadedValidation = body('canBeDownloaded').isBoolean()
+const minAgeRestrictionValidation = body('minAgeRestriction').isInt().custom(async (value: number) => {
+    value > 18
+})
 
 videoRoute.get('/', (req: Request, res: Response) => {   //send all video 
     res.status(200).send(videoRepository.getVideo())
@@ -62,78 +70,32 @@ videoRoute.delete('/:id', (req:RequestParams<{id:number}>, res: Response) => {
     videoRepository.deleteById(req.params.id) ? res.sendStatus(204) : res.sendStatus(404) 
 })
 
-videoRoute.put('/:id', (req: RequestBodyAndParams<{id: number}, {title: string,
-    author: string,
-    availableResolutions: AvailableResolutions[],
-    canBeDownloaded:boolean,
-    publicationDate: string,
-    minAgeRestriction: number | null}>, res: Response) => {
+videoRoute.put('/:id',
+                    titleValidation,
+                    authorValidation,
+                    availableResolutionsValidation,
+                    canBeDownloadedValidation,
+                    minAgeRestrictionValidation,
+                    inputValidationMiddleware,
+    (req: RequestBodyAndParams<{id: string}, {title: string, author: string, availableResolutions: AvailableResolutions[], canBeDownloaded:boolean, publicationDate: string, minAgeRestriction: number | null}>, res: Response) => {
     
-    let errors: ErrorType = {
-        errorsMessages: []
-    }
-
     let {title, author, availableResolutions, canBeDownloaded, publicationDate, minAgeRestriction} = req.body
    
     let videoByID = videoRepository.putVideo(+req.params.id, title, author, availableResolutions, canBeDownloaded, publicationDate, minAgeRestriction)
     if (!videoByID) {
         res.sendStatus(404)
-    }
-
-    if (!title || !title.length || title.trim().length > 40) {
-        errors.errorsMessages.push({message:'invalid title', field: 'title'})
-    }
-    if (!author || !author.length || author.trim().length > 20) {
-        errors.errorsMessages.push({message:'invalid author', field: 'author'})
     } 
-    if (Array.isArray(availableResolutions) && availableResolutions.length) {
-        availableResolutions.map( (e) => {
-            !AvailableResolutions[e] && errors.errorsMessages.push({message:'invalid availableResolutions', field: 'availableResolutions'})
-        })
-    }
-    if (canBeDownloaded === undefined || typeof canBeDownloaded !== 'boolean') {
-        errors.errorsMessages.push({message:'invalid downloaded status', field: 'canBeDownloaded'})
-    } 
-    if (minAgeRestriction !== null) { 
-    if ( minAgeRestriction > 18  || minAgeRestriction < 1 ) {
-        errors.errorsMessages.push({message:'invalid minAgeRestriction', field: 'minAgeRestriction'})
-     }}
-
-     if(typeof publicationDate !== 'string') {
-        errors.errorsMessages.push({message:'invalid publicationDate', field: 'publicationDate'})
-     }
-
-    if(errors.errorsMessages.length){
-        res.status(400).send(errors)
-        return
-    }
-    
     res.sendStatus(204);
+
 })
 
-videoRoute.post('/', (req: RequestBodyType<{title: string, author: string, availableResolutions: AvailableResolutions[]}>, res) => {
-    
-    let errors: ErrorType = {
-        errorsMessages: []
-    }
+videoRoute.post('/', titleValidation,
+                     authorValidation,
+                     availableResolutionsValidation,
+                     inputValidationMiddleware,
+    (req: RequestBodyType<{title: string, author: string, availableResolutions: AvailableResolutions[]}>, res) => {
 
     let {title, author, availableResolutions} = req.body
-    if (!title || !title.length || title.trim().length > 40) {
-        errors.errorsMessages.push({message:'invalid title', field: 'title'})
-    }
-    if (!author || !author.length || author.trim().length > 20) {
-        errors.errorsMessages.push({message:'invalid author', field: 'author'})
-    } 
-    if (Array.isArray(availableResolutions) && availableResolutions.length) {
-        availableResolutions.map( (e) => {
-            !AvailableResolutions[e] && errors.errorsMessages.push({message:'invalid availableResolutions', field: 'availableResolutions'})
-        })
-    } 
-
-    if(errors.errorsMessages.length){
-        res.status(400).send(errors)
-        return
-    }
 
     let newVideo = videoRepository.postVideo(title, author, availableResolutions)
     res.status(201).send(newVideo)
